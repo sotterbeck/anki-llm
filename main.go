@@ -4,9 +4,11 @@ import (
 	"context"
 	"flag"
 	"fmt"
+	"github.com/briandowns/spinner"
 	"github.com/joho/godotenv"
 	"log"
 	"os"
+	"time"
 )
 
 // Main entry point of the application
@@ -27,9 +29,19 @@ func main() {
 		log.Fatalf("Error creating or accessing deck: %v", err)
 	}
 
+	s := spinner.New(spinner.CharSets[14], 100*time.Millisecond)
+	s.Suffix = " Generating Anki notes..."
+
+	s.Start()
 	notes, err := llm.GenerateAnkiNotes(ctx, file, modelName)
 	if err != nil {
 		log.Fatalf("Failed to generate Anki notes: %v", err)
+	}
+	s.Stop()
+
+	fmt.Printf("Generated notes:\n")
+	for _, note := range notes {
+		fmt.Printf(" - %s\n", note["Front"])
 	}
 
 	addNotesToDeck(anki, deckName, modelName, notes)
@@ -76,20 +88,9 @@ func initializeLLM(ctx context.Context) LLM {
 	return llm
 }
 
-// Generate Anki notes from the PDF content
-func generateNotes(ctx context.Context, llm LLM, file *os.File, modelName string) []map[string]string {
-	notes, err := llm.GenerateAnkiNotes(ctx, file, modelName)
-	if err != nil {
-		log.Fatalf("Failed to generate Anki notes: %v", err)
-	}
-	return notes
-}
-
 // Add notes to the specified Anki deck
 func addNotesToDeck(anki *Anki, deckName string, modelName string, notes []map[string]string) {
-	for _, note := range notes {
-		if err := anki.AddNote(deckName, modelName, note, []string{"Test"}); err != nil {
-			log.Printf("Failed to add note (Front: %v, Back: %v to deck: %v", note["Front"], note["Back"], err)
-		}
+	if err := anki.AddNotes(deckName, modelName, notes); err != nil {
+		log.Fatalf("Failed to add notes to deck: %v", err)
 	}
 }

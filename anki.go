@@ -23,6 +23,14 @@ type Anki struct {
 	connectURL string
 }
 
+type Note struct {
+	DeckName  string            `json:"deckName"`
+	ModelName string            `json:"modelName"`
+	Fields    map[string]string `json:"fields"`
+	Tags      []string          `json:"tags"`
+	Options   map[string]bool   `json:"options"`
+}
+
 func NewAnki(connectURL string) *Anki {
 	return &Anki{connectURL: connectURL}
 }
@@ -71,20 +79,21 @@ func (a *Anki) CreateDeck(deckName string) error {
 	return nil
 }
 
-func (a *Anki) AddNote(deckName, modelName string, fields map[string]string, tags []string) error {
-	note := map[string]interface{}{
-		"deckName":  deckName,
-		"modelName": modelName,
-		"fields":    fields,
-		"tags":      tags,
-		"options":   map[string]bool{"allowDuplicate": false},
+func (a *Anki) AddNotes(deckName, modelName string, notes []map[string]string) error {
+	var noteData []Note
+	for _, note := range notes {
+		noteData = append(noteData, Note{
+			DeckName:  deckName,
+			ModelName: modelName,
+			Fields:    note,
+			Options:   map[string]bool{"allowDuplicate": false},
+		})
 	}
 
-	_, err := a.invoke("addNote", map[string]interface{}{"note": note})
+	_, err := a.invoke("addNotes", map[string]interface{}{"notes": noteData})
 	if err != nil {
-		return fmt.Errorf("failed to add note: %v", err)
+		return fmt.Errorf("failed to add notes: %v", err)
 	}
 
-	fmt.Printf("Note added to deck '%s'\n", deckName)
 	return nil
 }

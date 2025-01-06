@@ -85,11 +85,6 @@ func (g *GeminiLLM) GenerateAnkiNotes(ctx context.Context, r io.Reader, noteMode
 			}
 		}
 	}
-
-	fmt.Println("Generated Notes:")
-	for _, note := range notes {
-		fmt.Printf("Front: %s\nBack: %s\n", note["Front"], note["Back"])
-	}
 	return notes, nil
 }
 
