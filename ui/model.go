@@ -44,7 +44,6 @@ type Model struct {
 	picker    filepicker.Model
 	noteModel string
 	deckName  string
-	modelName string
 	notes     []NoteItem
 	selected  map[int]bool
 	cursor    int
@@ -84,7 +83,6 @@ func NewModel(ctx context.Context, llm LLM, anki AnkiAPI) *Model {
 		cancel:    cancel,
 		noteModel: "Basic",
 		deckName:  deck,
-		modelName: "Basic",
 		selected:  map[int]bool{},
 		spinner:   sp,
 		llm:       llm,
@@ -193,7 +191,7 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			}
 			m.loading = true
 			m.status = "adding to Anki..."
-			return m, addNotesCmd(m.ctx, m.anki, m.deckName, m.modelName, sel)
+			return m, addNotesCmd(m.ctx, m.anki, m.deckName, m.noteModel, sel)
 		case "r":
 			if m.pdfPath == "" {
 				m.status = "no pdf selected"
