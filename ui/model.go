@@ -21,6 +21,7 @@ type LLM interface {
 
 type AnkiAPI interface {
 	AddNotes(deckName, modelName string, notes []map[string]string) error
+	ListDeckNames() ([]string, error)
 }
 
 // NoteItem represents a generated Anki note.
@@ -71,11 +72,18 @@ func NewModel(ctx context.Context, llm LLM, anki AnkiAPI) *Model {
 		fp.CurrentDirectory = wd
 	}
 
+	deckNames, _ := anki.ListDeckNames()
+	var deck = "Default"
+
+	if len(deckNames) > 0 {
+		deck = deckNames[0]
+	}
+
 	return &Model{
 		ctx:       cctx,
 		cancel:    cancel,
 		noteModel: "Basic",
-		deckName:  "Default",
+		deckName:  deck,
 		modelName: "Basic",
 		selected:  map[int]bool{},
 		spinner:   sp,

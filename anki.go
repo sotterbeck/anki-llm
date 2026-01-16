@@ -79,6 +79,29 @@ func (a *Anki) CreateDeck(deckName string) error {
 	return nil
 }
 
+func (a *Anki) ListDeckNames() ([]string, error) {
+	result, err := a.invoke("deckNames", nil)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get deck names: %v", err)
+	}
+
+	slice, ok := result.([]interface{})
+	if !ok {
+		return nil, fmt.Errorf("unexpected result type: %T", result)
+	}
+
+	names := make([]string, len(slice))
+	for i, v := range slice {
+		str, ok := v.(string)
+		if !ok {
+			return nil, fmt.Errorf("unexpected element type at index %d: %T", i, v)
+		}
+		names[i] = str
+	}
+
+	return names, nil
+}
+
 func (a *Anki) AddNotes(deckName, modelName string, notes []map[string]string) error {
 	var noteData []Note
 	for _, note := range notes {

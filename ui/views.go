@@ -27,7 +27,7 @@ func (m *Model) View() string {
 
 	cols := lipgloss.JoinHorizontal(lipgloss.Top, left, right)
 	footer := m.renderFooter()
-	return titleStyle.Render("Anki-LLM TUI") + "\n" + cols + "\n" + footer
+	return titleStyle.Render("Select Notes") + "\n" + cols + "\n" + footer
 }
 
 func (m *Model) renderList() string {
@@ -65,7 +65,7 @@ func (m *Model) renderPreview() string {
 }
 
 func (m *Model) renderFooter() string {
-	hints := "j/k:move  space:toggle  a:add  s:select-all  r:regenerate  q:quit"
+	hints := fmt.Sprintf("j/k:move  space:toggle  a:add  s:select-all d:change-deck (%s) r:regenerate  q:quit", m.deckName)
 	if m.picking {
 		hints = "up/down:move  enter:select  q:quit"
 	}
