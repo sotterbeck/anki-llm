@@ -11,6 +11,7 @@
 
 # General file types
 *.pdf
+anki-llm
 
 # Test binary, built with `go test -c`
 *.test
