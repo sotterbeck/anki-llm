@@ -18,16 +18,21 @@ func (m *Model) View() string {
 		return fmt.Sprintf("Error: %v\n", m.err)
 	}
 
-	if m.picking {
+	switch m.state {
+	case StatePickingPDF:
 		return titleStyle.Render("Choose PDF") + "\n" + m.picker.View() + "\n" + m.renderFooter()
+	case StateSelectingDeck:
+		return titleStyle.Render("Select Deck") + "\n" + m.renderDeckSelector() + "\n" + m.renderFooter()
+	case StateCreatingDeck:
+		return titleStyle.Render("Create New Deck") + "\n" + m.renderNewDeckInput() + "\n" + m.renderFooter()
+	case StateViewingNotes:
+		left := m.renderList()
+		right := m.renderPreview()
+		cols := lipgloss.JoinHorizontal(lipgloss.Top, left, right)
+		footer := m.renderFooter()
+		return titleStyle.Render("Select Notes") + "\n" + cols + "\n" + footer
 	}
-
-	left := m.renderList()
-	right := m.renderPreview()
-
-	cols := lipgloss.JoinHorizontal(lipgloss.Top, left, right)
-	footer := m.renderFooter()
-	return titleStyle.Render("Select Notes") + "\n" + cols + "\n" + footer
+	return ""
 }
 
 func (m *Model) renderList() string {
@@ -65,9 +70,16 @@ func (m *Model) renderPreview() string {
 }
 
 func (m *Model) renderFooter() string {
-	hints := fmt.Sprintf("j/k:move  space:toggle  a:add  s:select-all d:change-deck (%s) r:regenerate  q:quit", m.deckName)
-	if m.picking {
+	hints := ""
+	switch m.state {
+	case StatePickingPDF:
 		hints = "up/down:move  enter:select  q:quit"
+	case StateViewingNotes:
+		hints = fmt.Sprintf("j/k:move  space:toggle  a:add  s:select-all d:change-deck (%s) r:regenerate  q:quit", m.deckName)
+	case StateSelectingDeck:
+		hints = "j/k:move  enter:select  esc:cancel  q:quit"
+	case StateCreatingDeck:
+		hints = "enter:confirm  esc:cancel  q:quit"
 	}
 	status := m.status
 	sp := ""
@@ -76,4 +88,26 @@ func (m *Model) renderFooter() string {
 		sp = " " + m.spinner.View()
 	}
 	return lipgloss.NewStyle().Foreground(lipgloss.Color("241")).Render(hints + "    " + status + sp)
+}
+
+func (m *Model) renderDeckSelector() string {
+	var b strings.Builder
+	decks := m.getVisibleDecks()
+	for i, deck := range decks {
+		cursor := " "
+		if i == m.deckCursor {
+			cursor = ">"
+		}
+		line := fmt.Sprintf("%s %s", cursor, deck)
+		if i == m.deckCursor {
+			b.WriteString(selStyle.Render(line) + "\n")
+		} else {
+			b.WriteString(line + "\n")
+		}
+	}
+	return listStyle.Render(b.String())
+}
+
+func (m *Model) renderNewDeckInput() string {
+	return lipgloss.NewStyle().Padding(0, 1).Render("Deck name: " + m.newDeckInput.View())
 }

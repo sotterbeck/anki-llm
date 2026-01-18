@@ -13,3 +13,8 @@ type generateErrMsg struct {
 type ankiResultMsg struct {
 	Err error
 }
+
+type deckCreatedMsg struct {
+	DeckName string
+	Err      error
+}
