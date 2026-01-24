@@ -1,20 +1,20 @@
-package ui
+package shared
 
 // Messages used by the TUI to communicate async results.
 
-type generatedNotesMsg struct {
+type GeneratedNotesMsg struct {
 	Notes []map[string]string
 }
 
-type generateErrMsg struct {
+type GenerateErrMsg struct {
 	Err error
 }
 
-type ankiResultMsg struct {
+type AnkiResultMsg struct {
 	Err error
 }
 
-type deckCreatedMsg struct {
+type DeckCreatedMsg struct {
 	DeckName string
 	Err      error
 }
