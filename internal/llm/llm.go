@@ -1,13 +1,14 @@
-package main
+package llm
 
 import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"github.com/google/generative-ai-go/genai"
-	"google.golang.org/api/option"
 	"io"
 	"log"
+
+	"github.com/google/generative-ai-go/genai"
+	"google.golang.org/api/option"
 )
 
 var prompt = `

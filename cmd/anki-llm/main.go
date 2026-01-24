@@ -9,7 +9,9 @@ import (
 
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/joho/godotenv"
-	"github.com/sotterbeck/anki-llm/ui"
+	"github.com/sotterbeck/anki-llm/internal/anki"
+	"github.com/sotterbeck/anki-llm/internal/llm"
+	"github.com/sotterbeck/anki-llm/internal/ui"
 )
 
 func main() {
@@ -19,12 +21,15 @@ func main() {
 	defer cancel()
 	go handleSignals(cancel)
 
-	llm := initializeLLM(ctx, os.Getenv("GEMINI_MODEL"))
-	defer llm.Close()
-	anki := initializeAnkiClient()
+	model, err := initializeLLM(ctx, os.Getenv("GEMINI_MODEL"))
+	if err != nil {
+		log.Fatalf("Failed to create Gemini LLM: %v", err)
+	}
+	defer model.Close()
+	ankiClient := initializeAnkiClient()
 
 	// Create and start the TUI program
-	uiModel := ui.NewModel(ctx, llm, anki)
+	uiModel := ui.NewModel(ctx, model, ankiClient)
 	p := tea.NewProgram(uiModel, tea.WithAltScreen())
 	if err := p.Start(); err != nil {
 		log.Fatalf("failed to start TUI: %v", err)
@@ -40,19 +45,15 @@ func handleSignals(cancel context.CancelFunc) {
 }
 
 // initializeAnkiClient returns an Anki client. Adjust the URL here if needed.
-func initializeAnkiClient() *Anki {
-	return NewAnki("http://localhost:8765")
+func initializeAnkiClient() *anki.Anki {
+	return anki.NewAnki("http://localhost:8765")
 }
 
 // initializeLLM creates the Gemini LLM client. The model parameter may be empty;
 // if so, a sensible default is chosen.
-func initializeLLM(ctx context.Context, model string) LLM {
+func initializeLLM(ctx context.Context, model string) (llm.LLM, error) {
 	if model == "" {
 		model = "gemini-3-flash-preview"
 	}
-	llm, err := NewGeminiLLM(ctx, model, os.Getenv("GEMINI_API_KEY"))
-	if err != nil {
-		log.Fatalf("Failed to create Gemini LLM: %v", err)
-	}
-	return llm
+	return llm.NewGeminiLLM(ctx, model, os.Getenv("GEMINI_API_KEY"))
 }

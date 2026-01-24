@@ -24,7 +24,7 @@ Anki deck using the AnkiConnect API.
 To generate Anki flashcards from a PDF file, run the following command:
 
 ```bash
-go run main.go -pdf <path-to-pdf-file> -deck <deck-name>
+go run ./cmd/anki-llm
 ```
 
 > [!CAUTION]

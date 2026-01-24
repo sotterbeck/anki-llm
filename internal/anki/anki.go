@@ -1,4 +1,4 @@
-package main
+package anki
 
 import (
 	"bytes"
@@ -8,13 +8,13 @@ import (
 	"net/http"
 )
 
-type AnkiRequest struct {
+type Request struct {
 	Action  string      `json:"action"`
 	Version int         `json:"version"`
 	Params  interface{} `json:"params,omitempty"`
 }
 
-type AnkiResponse struct {
+type Response struct {
 	Result interface{} `json:"result"`
 	Error  string      `json:"error"`
 }
@@ -36,7 +36,7 @@ func NewAnki(connectURL string) *Anki {
 }
 
 func (a *Anki) invoke(action string, params interface{}) (interface{}, error) {
-	request := AnkiRequest{
+	request := Request{
 		Action:  action,
 		Version: 6,
 		Params:  params,
@@ -58,7 +58,7 @@ func (a *Anki) invoke(action string, params interface{}) (interface{}, error) {
 		return nil, fmt.Errorf("failed to read response: %v", err)
 	}
 
-	var ankiResp AnkiResponse
+	var ankiResp Response
 	if err := json.Unmarshal(body, &ankiResp); err != nil {
 		return nil, fmt.Errorf("failed to unmarshal response: %v", err)
 	}
